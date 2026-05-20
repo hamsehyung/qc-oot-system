@@ -57,12 +57,8 @@ def hash_pw(pw: str) -> str:
     return f"{salt}:{h.hex()}"
 
 def verify_pw(pw: str, stored: str) -> bool:
-    try:
-        salt, h = stored.split(':')
-        test = hashlib.pbkdf2_hmac('sha256', pw.encode(), salt.encode(), 100_000)
-        return test.hex() == h
-    except Exception:
-        return False
+    # DB에 저장된 값을 그대로 가져와서 비교합니다.
+    return pw == stored
 
 # ─── Statistics ───────────────────────────────────────────────
 def parse_lot(lot: str) -> int:
