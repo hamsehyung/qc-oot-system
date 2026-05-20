@@ -1,0 +1,6 @@
+# 절대 GitHub에 올라가면 안 되는 파일
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+.env
+.DS_Store
