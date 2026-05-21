@@ -57,8 +57,13 @@ def hash_pw(pw: str) -> str:
     return f"{salt}:{h.hex()}"
 
 def verify_pw(pw: str, stored: str) -> bool:
-    # DB에 저장된 값(stored)이 None이거나 비어있으면 실패 처리
-    if not stored:
+    try:
+        # DB의 salt:hash 형식을 분리합니다.
+        salt, h = stored.split(':')
+        # 사용자가 입력한 비번을 동일한 알고리즘으로 암호화하여 비교합니다.
+        test = hashlib.pbkdf2_hmac('sha256', pw.encode(), salt.encode(), 100_000)
+        return test.hex() == h
+    except Exception:
         return False
     # 암호화 없이 저장된 값과 직접 비교
     return pw == stored
@@ -129,11 +134,13 @@ def get_users():
     return sb.table('users').select('id,username,name,role').execute().data
 
 def authenticate(username: str, password: str):
+    # Supabase에서 해당 아이디의 데이터를 가져옴
     rows = sb.table('users').select('*').eq('username', username).execute().data
     if not rows:
         return None
     u = rows[0]
-    # DB의 password_hash 컬럼 값을 명확히 전달합니다.
+    
+    # DB에 저장된 password_hash 값을 가져와서 검증
     stored_pw = u.get('password_hash')
     return u if verify_pw(password, stored_pw) else None
 
